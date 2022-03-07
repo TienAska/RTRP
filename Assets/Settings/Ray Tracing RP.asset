@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: Ray Tracing RP
   m_EditorClassIdentifier: 
   rayTracingShader: {fileID: 4807578003741378534, guid: 14a5e19fe91f1374195ad534a7ea616a, type: 3}
+  imageWidth: 400
+  imageHeight: 225
