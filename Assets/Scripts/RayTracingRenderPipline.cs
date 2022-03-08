@@ -4,11 +4,15 @@ using UnityEngine.Experimental.Rendering;
 
 public class RayTracingRenderPipline : RenderPipeline
 {
-    private RayTracingRenderer renderer = new RayTracingRenderer();
+    private RayTracingAccelerationStructure accelerationStructure;
+    private RayTracingRenderer renderer;
 
     public RayTracingRenderPipline(RayTracingShader rayTracingShader, int imageWidth, int imgaeHeight)
     {
+        accelerationStructure = new RayTracingAccelerationStructure();
+        renderer = new RayTracingRenderer();
         renderer.rayTracingShader = rayTracingShader;
+        renderer.accelerationStructure = accelerationStructure;
         renderer.imageWidth = imageWidth;
         renderer.imageHeight = imgaeHeight;
     }
@@ -21,9 +25,15 @@ public class RayTracingRenderPipline : RenderPipeline
         }
     }
 
+    protected override void Dispose(bool disposing)
+    {
+        accelerationStructure.Release();
+    }
+
     private class RayTracingRenderer
     {
         public RayTracingShader rayTracingShader;
+        public RayTracingAccelerationStructure accelerationStructure;
         public int imageWidth;
         public int imageHeight;
 
@@ -39,6 +49,8 @@ public class RayTracingRenderPipline : RenderPipeline
             cmd.SetRenderTarget(renderTarget);
             cmd.ClearRenderTarget(false, true, Color.clear);
 
+            cmd.SetRayTracingShaderPass(rayTracingShader, "Sphere");
+            cmd.SetRayTracingAccelerationStructure(rayTracingShader, "_AccelerationStructure", accelerationStructure);
             cmd.SetRayTracingTextureParam(rayTracingShader, "_RenderTarget", renderTarget);
             cmd.DispatchRays(rayTracingShader, "MainRaygenShader", (uint)imageWidth, (uint)imageHeight, 1, camera);
 

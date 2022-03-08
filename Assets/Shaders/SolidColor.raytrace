@@ -1,8 +1,11 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
 RWTexture2D<float4> _RenderTarget;
+RaytracingAccelerationStructure _AccelerationStructure;
 
 #pragma max_recursion_depth 1
+
+#include "Common.hlsl"
 
 float3 RayColor(RayDesc r)
 {
@@ -37,7 +40,16 @@ void MainRaygenShader()
     r.TMin = 0.3;
     r.TMax = 1000.0;
 
+    RayPayload payload = { float4(0, 0, 0, 0) };
+    TraceRay(_AccelerationStructure, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, r, payload);
+
     float3 pixelColor = RayColor(r);
 
     _RenderTarget[dispatchIdx] = float4(pixelColor, 1.0);
+}
+
+[shader("miss")]
+void MainMissShader(inout RayPayload payload)
+{
+    payload.color = float4(0.0, 1.0, 0.0, 1.0);
 }
