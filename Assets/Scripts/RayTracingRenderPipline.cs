@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
+using static UnityEngine.Experimental.Rendering.RayTracingAccelerationStructure;
 
 public class RayTracingRenderPipline : RenderPipeline
 {
@@ -9,7 +10,11 @@ public class RayTracingRenderPipline : RenderPipeline
 
     public RayTracingRenderPipline(RayTracingShader rayTracingShader, int imageWidth, int imgaeHeight)
     {
-        accelerationStructure = new RayTracingAccelerationStructure();
+        accelerationStructure = new RayTracingAccelerationStructure(new RASSettings(ManagementMode.Automatic, RayTracingModeMask.Everything, ~0));
+        // Renderer sphereRenderer = GameObject.Find("Sphere").GetComponent<Renderer>();
+        // accelerationStructure.AddInstance(sphereRenderer);
+        accelerationStructure.Build();
+
         renderer = new RayTracingRenderer();
         renderer.rayTracingShader = rayTracingShader;
         renderer.accelerationStructure = accelerationStructure;
@@ -50,8 +55,9 @@ public class RayTracingRenderPipline : RenderPipeline
             cmd.ClearRenderTarget(false, true, Color.clear);
 
             cmd.SetRayTracingShaderPass(rayTracingShader, "Sphere");
+            accelerationStructure.Build();
             cmd.SetRayTracingAccelerationStructure(rayTracingShader, "_AccelerationStructure", accelerationStructure);
-            cmd.SetRayTracingTextureParam(rayTracingShader, "_RenderTarget", renderTarget);
+            cmd.SetRayTracingTextureParam(rayTracingShader, renderTarget, renderTarget);
             cmd.DispatchRays(rayTracingShader, "MainRaygenShader", (uint)imageWidth, (uint)imageHeight, 1, camera);
 
             cmd.Blit(renderTarget, BuiltinRenderTextureType.CameraTarget);

@@ -4,20 +4,20 @@ Shader "Ray Tracing/ProceduralSphere"
     {
         _Color ("Color", Color) = (1,1,1,1)
     }
+
     SubShader
     {
      Pass
         {
-            // RayTracingShader.SetShaderPass must use this name in order to execute the ray tracing shaders from this Pass.
             Name "Sphere"
 
             Tags{ "LightMode" = "RayTracing" }
 
             HLSLPROGRAM
 
-            #pragma multi_compile_local RAY_TRACING_PROCEDURAL_GEOMETRY
+            #pragma multi_compile_local RAY_TRACING_PROCEDURAL_GEOMETRY 
 
-            #pragma raytracing Sphere
+            #pragma raytracing sphere
 
             #include "Common.hlsl"
 
@@ -31,7 +31,7 @@ Shader "Ray Tracing/ProceduralSphere"
                 float4 _Color;
             };
 
-#if RAY_TRACING_PROCEDURAL_GEOMETRY
+#if RAY_TRACING_PROCEDURAL_GEOMETRY 
             [shader("intersection")]
             void IntersectionMain()
             {
@@ -44,9 +44,15 @@ Shader "Ray Tracing/ProceduralSphere"
             [shader("closesthit")]
             void ClosestHitMain(inout RayPayload payload : SV_RayPayload, AttributeData attribs : SV_IntersectionAttributes)
             {
-                payload.color = _Color;
+                payload.color = float4(1, 0, 0, 1);
             }
 
+            // [shader("anyhit")]
+            // void AnyHitMain(inout RayPayload payload : SV_RayPayload, AttributeData attribs : SV_IntersectionAttributes)
+            // {
+            //     payload.color = float4(0, 0, 1, 1);
+            // }
+            
             ENDHLSL
         }
     }

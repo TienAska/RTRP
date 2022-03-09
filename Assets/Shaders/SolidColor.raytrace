@@ -1,17 +1,9 @@
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
-
 RWTexture2D<float4> _RenderTarget;
 RaytracingAccelerationStructure _AccelerationStructure;
 
-#pragma max_recursion_depth 1
+#pragma max_recursion_depth 31
 
 #include "Common.hlsl"
-
-float3 RayColor(RayDesc r)
-{
-    float t = 0.5 * (r.Direction.y + 1.0);
-    return lerp(float3(0.5, 0.7, 1.0), 1.0, t);
-}
 
 [shader("raygeneration")]
 void MainRaygenShader()
@@ -32,6 +24,7 @@ void MainRaygenShader()
     float3 vertical = float3(0.0, viewportHeight, 0.0);
     float3 lowerLeftCorner = origin - horizontal/2 + vertical/2 - float3(0.0, 0.0, focalLength);
 
+
     // Render
     float2 uv = (float2)dispatchIdx / dispatchDim;
     RayDesc r;
@@ -43,13 +36,20 @@ void MainRaygenShader()
     RayPayload payload = { float4(0, 0, 0, 0) };
     TraceRay(_AccelerationStructure, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, r, payload);
 
-    float3 pixelColor = RayColor(r);
+    // float3 pixelColor = RayColor(r);
 
-    _RenderTarget[dispatchIdx] = float4(pixelColor, 1.0);
+    // _RenderTarget[dispatchIdx] = float4(pixelColor, 1.0);
+    _RenderTarget[dispatchIdx] = payload.color;
+}
+
+float3 RayColor(float3 rayDirection)
+{
+    float t = 0.5 * (rayDirection.y + 1.0);
+    return lerp(float3(0.5, 0.7, 1.0), 1.0, t);
 }
 
 [shader("miss")]
 void MainMissShader(inout RayPayload payload)
 {
-    payload.color = float4(0.0, 1.0, 0.0, 1.0);
+    payload.color = float4(RayColor(WorldRayDirection()), 1.0);
 }
